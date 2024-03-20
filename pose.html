@@ -10,6 +10,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.1/control_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.2/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.2/pose.js" crossorigin="anonymous"></script>
+
+  <style>
+
+    .list-of-values
+    {
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+    }
+
+    #actionDisplay
+    {
+      margin: 16px;
+    }
+
+  </style>
+
 </head>
 
 <body>
@@ -17,7 +34,7 @@
   <!-- Navigation Bar -->
   <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-      <a class="navbar-item" href="index.html">
+      <a class="navbar-item" href="https://www.instagram.com/p/CzNaCmEuxIu/">
         <img src="SESS_Trimmed.png" >
       </a>
   
@@ -85,7 +102,34 @@
         </article>
       </div>
     </div>
+
+    <!-- shows a numeric value for action -->
+    <div class="column" id="actionDisplay">
+      <article class="panel is-primary">
+        <p class="panel-heading">
+          Agent Action
+        </p>
+        <div class="panel-block">
+
+          <div class = "list-of-values">
+            <p id="actionValue">0</p>
+            <p id="leftArmAnglePrint">0</p>
+            <p id="rightArmAnglePrint">0</p>
+          </div>
+            
+        </div>
+      </article>
+    </div>
+
+    <!-- <div id="actionDisplay" class="content has-text-centered">
+      <p class="title is-4">Action: <span id="actionValue">0</span></p>
+      <p>Left Shoulder: <span id="leftShoulderCoords"></span></p>
+      <p>Right Shoulder: <span id="rightShoulderCoords"></span></p>
+      <p>Left Wrist: <span id="leftWristCoords"></span></p>
+      <p>Right Wrist: <span id="rightWristCoords"></span></p>
+    </div> -->
     
+    <!-- for control panel -->
     <div class="loading">
       <div class="spinner"></div>
     </div>

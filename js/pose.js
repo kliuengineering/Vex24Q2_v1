@@ -1,3 +1,5 @@
+/************************************** SETUP BEGINS ***************************************/
+
 // capturing vedeo
 const video5 = document.getElementsByClassName('input_video5')[0];
 
@@ -27,6 +29,37 @@ function zColor(data)
   return `rgba(0, ${255 * z}, ${255 * (1 - z)}, 1)`;
 }
 
+/************************************** SETUP ENDS *****************************************/
+
+
+
+
+
+/************************************** MATH BEGINS ****************************************/
+
+let action = 0; // agent action
+const updateFrequency = 500; // 2 updates/second
+
+function calculateAngle(pointA, pointB, pointC)
+{
+  let ba = { x: pointA.x - pointB.x,     y: pointA.y - pointB.y};
+  let bc = { x: pointC.x - pointB.x,     y: pointC.y - pointB.y};
+
+  let dotProduct = ba.x * bc.x + ba.y * bc.y;
+  let magnitudeBA = Math.sqrt(ba.x * ba.x + ba.y * ba.y);
+  let magnitudeBC = Math.sqrt(bc.x * bc.x + bc.y * bc.y);
+
+  let cosineAngle = dotProduct / (magnitudeBA * magnitudeBC);
+  return Math.acos(cosineAngle) * (180 / Math.PI);
+}
+
+/************************************** MATH ENDS ******************************************/
+
+
+
+
+
+/************************************** POSE DETECTION BEGINS ******************************/
 // pose detection logic
 function onResultsPose(results) 
 {
@@ -62,6 +95,78 @@ function onResultsPose(results)
       }
   );
 
+
+
+
+
+  // declaration of the positional variables
+  let leftArmAngle = 0;
+  let rightArmAngle = 0;
+  let leftShoulder = 0
+  let rightShoulder = 0;
+  let leftWrist = 0;
+  let rightWrist = 0;
+  
+  // calculates the angle between 3 points
+  if (results.poseLandmarks) 
+  {
+    // implements 4 landmarks vector calculation
+     leftShoulder = results.poseLandmarks[11];
+     rightShoulder = results.poseLandmarks[12];
+     leftWrist = results.poseLandmarks[15];
+     rightWrist = results.poseLandmarks[16];
+
+    // Calculate angles
+    leftArmAngle = calculateAngle(leftWrist, leftShoulder, rightShoulder);
+    rightArmAngle = calculateAngle(rightWrist, rightShoulder, leftShoulder);
+
+    // Determine the action based on arm angles
+
+    // case 1 -> robot turns <left>
+    if (leftArmAngle >= 60 && leftArmAngle < 150 && rightArmAngle < 60) 
+    {
+      action = 1;
+    }
+    
+    // case 2 -> robot turns <right>
+    else if (rightArmAngle >= 60 && rightArmAngle < 150 && leftArmAngle < 60) 
+    {
+      action = 2;
+    }
+    
+    // case 3 -> robot proceeds <forward>
+    else if (leftArmAngle >= 60 && rightArmAngle >= 60 && leftArmAngle < 150 && rightArmAngle < 150) 
+    {
+      action = 3;
+    } 
+
+    // case 4 -> robot retreats <backward>
+    else if (leftArmAngle >= 150 && rightArmAngle >= 150) 
+    {
+      action = 4;
+    }
+    
+    // base case -> robot <stops>
+    else 
+    {
+      action = 0;
+    }    
+  }
+
+  // TODO:
+
+  // Prerequisites
+  //    a) revise calcualteAngle() function for retrieving the left and right arms' angles
+
+  // Establishes a server-client connection
+  //    1. sets up a socket for transmitting INET, UDP to the agent
+  //    2. implements a switch - case for sending instructions to the agent
+  //    3. Ensures the frequency of sending packets do not exceed 2 packets/second
+
+
+
+
+
   // draws land marks, indicates different body parts
   drawLandmarks
   (
@@ -84,9 +189,25 @@ function onResultsPose(results)
       {color: zColor, fillColor: '#AAAAAA'}
   );
 
+
+
+  // displays data on the HTML page
+  document.getElementById('actionValue').innerText = `Agent's current action is -> ${action}`;
+
+  // document.getElementById('leftShoulderCoords').innerText = leftShoulder;
+  // document.getElementById('leftWristCoords').innerText = leftWrist;
+  // document.getElementById('rightShoulderCoords').innerText = rightShoulder;
+  // document.getElementById('rightWristCoords').innerText = rightWrist;
+
+  document.getElementById('leftArmAnglePrint').innerText = `Your left arm angle is -> ${leftArmAngle.toString()}`;
+  document.getElementById('rightArmAnglePrint').innerText = `Your right arm angle is -> ${rightArmAngle.toString()}`;
+
+
   canvasCtx5.restore();
 }
 
+
+// mediapipe fetcher
 const pose = new Pose
 (
   {
@@ -98,6 +219,7 @@ const pose = new Pose
   }
 );
 pose.onResults(onResultsPose);
+
 
 // pose processing
 const camera = new Camera
@@ -112,6 +234,12 @@ const camera = new Camera
   width: 480, height: 480
 });
 camera.start();
+
+/************************************** POSE DETECTION ENDS ********************************/
+
+
+
+
 
 // allows user control of pose detection parameters
 new ControlPanel(controlsElement5, 
