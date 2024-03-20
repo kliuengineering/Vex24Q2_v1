@@ -1,22 +1,33 @@
+// capturing vedeo
 const video5 = document.getElementsByClassName('input_video5')[0];
+
+// video rendering
 const out5 = document.getElementsByClassName('output5')[0];
+
+// for user input and setting
 const controlsElement5 = document.getElementsByClassName('control5')[0];
+
+// draws pose landmarks
 const canvasCtx5 = out5.getContext('2d');
 
+// controls the rendering fps
 const fpsControl = new FPS();
 
+// loading spinning animation
 const spinner = document.querySelector('.loading');
 spinner.ontransitionend = () => 
 {
   spinner.style.display = 'none';
 };
 
+// utility -> generate color based on 'z' depth axis
 function zColor(data) 
 {
   const z = clamp(data.from.z + 0.5, 0, 1);
   return `rgba(0, ${255 * z}, ${255 * (1 - z)}, 1)`;
 }
 
+// pose detection logic
 function onResultsPose(results) 
 {
   document.body.classList.add('loaded');
@@ -26,6 +37,7 @@ function onResultsPose(results)
   canvasCtx5.clearRect(0, 0, out5.width, out5.height);
   canvasCtx5.drawImage(results.image, 0, 0, out5.width, out5.height);
 
+  // connects landmarks
   drawConnectors
   (
       canvasCtx5, results.poseLandmarks, POSE_CONNECTIONS, 
@@ -40,16 +52,17 @@ function onResultsPose(results)
           const z0 = clamp(data.from.z + 0.5, 0, 1);
           const z1 = clamp(data.to.z + 0.5, 0, 1);
 
+          // colour gradient changes based on z axis
           const gradient = canvasCtx5.createLinearGradient(x0, y0, x1, y1);
-          gradient.addColorStop(
-              0, `rgba(0, ${255 * z0}, ${255 * (1 - z0)}, 1)`);
-          gradient.addColorStop(
-              1.0, `rgba(0, ${255 * z1}, ${255 * (1 - z1)}, 1)`);
+          gradient.addColorStop( 0, `rgba(0, ${255 * z0}, ${255 * (1 - z0)}, 1)` );
+          gradient.addColorStop( 1.0, `rgba(0, ${255 * z1}, ${255 * (1 - z1)}, 1)` );
+
           return gradient;
         }
       }
   );
 
+  // draws land marks, indicates different body parts
   drawLandmarks
   (
       canvasCtx5,
@@ -77,6 +90,7 @@ function onResultsPose(results)
 const pose = new Pose
 (
   {
+    // mediapipe initialization
     locateFile: (file) => 
     {
       return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.2/${file}`;
@@ -85,10 +99,12 @@ const pose = new Pose
 );
 pose.onResults(onResultsPose);
 
+// pose processing
 const camera = new Camera
 (
   video5, 
   {
+    // callback -> sends the current pose to mediapipe
     onFrame: async () => 
     {
       await pose.send({image: video5});
@@ -97,6 +113,7 @@ const camera = new Camera
 });
 camera.start();
 
+// allows user control of pose detection parameters
 new ControlPanel(controlsElement5, 
   {
       selfieMode: true,
