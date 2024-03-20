@@ -50,7 +50,17 @@ function calculateAngle(pointA, pointB, pointC)
   let magnitudeBC = Math.sqrt(bc.x * bc.x + bc.y * bc.y);
 
   let cosineAngle = dotProduct / (magnitudeBA * magnitudeBC);
-  return Math.acos(cosineAngle) * (180 / Math.PI);
+
+  // angle calculations
+  let theta = Math.acos(cosineAngle) * (180 / Math.PI);
+
+  if ( pointA.y - pointB.y < 0 )
+  {
+    theta += 180;
+  }
+
+  rc = theta;
+  return rc;
 }
 
 /************************************** MATH ENDS ******************************************/
@@ -104,8 +114,8 @@ function onResultsPose(results)
   let rightArmAngle = 0;
   let leftShoulder = 0
   let rightShoulder = 0;
-  let leftWrist = 0;
-  let rightWrist = 0;
+  let leftNode1 = 0;
+  let rightNode1 = 0;
   
   // calculates the angle between 3 points
   if (results.poseLandmarks) 
@@ -113,35 +123,35 @@ function onResultsPose(results)
     // implements 4 landmarks vector calculation
      leftShoulder = results.poseLandmarks[11];
      rightShoulder = results.poseLandmarks[12];
-     leftWrist = results.poseLandmarks[15];
-     rightWrist = results.poseLandmarks[16];
+     leftNode1 = results.poseLandmarks[15];
+     rightNode1 = results.poseLandmarks[16];
 
     // Calculate angles
-    leftArmAngle = calculateAngle(leftWrist, leftShoulder, rightShoulder);
-    rightArmAngle = calculateAngle(rightWrist, rightShoulder, leftShoulder);
+    leftArmAngle = calculateAngle(leftNode1, leftShoulder, rightShoulder);
+    rightArmAngle = calculateAngle(rightNode1, rightShoulder, leftShoulder);
 
     // Determine the action based on arm angles
 
     // case 1 -> robot turns <left>
-    if (leftArmAngle >= 60 && leftArmAngle < 150 && rightArmAngle < 60) 
+    if (leftArmAngle > 140 && rightArmAngle < 70) 
     {
       action = 1;
     }
     
     // case 2 -> robot turns <right>
-    else if (rightArmAngle >= 60 && rightArmAngle < 150 && leftArmAngle < 60) 
+    else if (rightArmAngle > 140 && leftArmAngle < 70) 
     {
       action = 2;
     }
     
     // case 3 -> robot proceeds <forward>
-    else if (leftArmAngle >= 60 && rightArmAngle >= 60 && leftArmAngle < 150 && rightArmAngle < 150) 
+    else if ( (leftArmAngle > 140 && leftArmAngle < 230) && (rightArmAngle > 140 && rightArmAngle < 230) ) 
     {
       action = 3;
     } 
 
     // case 4 -> robot retreats <backward>
-    else if (leftArmAngle >= 150 && rightArmAngle >= 150) 
+    else if ( (leftArmAngle >= 230 && leftArmAngle < 270) && (rightArmAngle >= 230 && rightArmAngle < 270) ) 
     {
       action = 4;
     }
